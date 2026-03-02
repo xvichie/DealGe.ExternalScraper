@@ -1,0 +1,4 @@
+node_modules/
+dist/
+copart-debug.html
+copart-debug.png
