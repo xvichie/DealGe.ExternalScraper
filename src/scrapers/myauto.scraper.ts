@@ -1,5 +1,6 @@
 import { createBrowser } from "../browsers/createBrowser";
-import { extractMyAutoProductId } from "../utils/myauto.utils";
+import { MyAutoComparableSearch, MyAutoSearchResponse } from "../types/myauto.types";
+import { buildMyAutoComparablesQuery, evaluatePrice, extractMyAutoProductId } from "../utils/myauto.utils";
 
 export async function scrapeMyAutoPreview(url: string): Promise<any> {
   const productId = extractMyAutoProductId(url);
@@ -46,4 +47,82 @@ export async function scrapeMyAutoPreview(url: string): Promise<any> {
   } finally {
     await browser.close();
   }
+}
+
+const MAX_ITEMS = 200;
+
+export async function scrapeMyAutoComparables(
+  params: MyAutoComparableSearch
+): Promise<any[]> {
+
+  const { browser, page } = await createBrowser();
+
+  try {
+
+    await page.goto("https://www.myauto.ge", {
+      waitUntil: "domcontentloaded",
+      timeout: 30000,
+    });
+
+    await page.waitForTimeout(1200);
+
+    let currentPage = 1;
+    let lastPage = 1;
+
+    const results: any[] = [];
+
+    do {
+
+      const query = buildMyAutoComparablesQuery(params, currentPage);
+
+      const apiUrl =
+        `https://api2.myauto.ge/ka/products?${query}`;
+
+      const response = await page.request.get(apiUrl, {
+        headers: {
+          accept: "application/json, text/plain, */*",
+          "accept-language": "ka,en-US;q=0.9,en;q=0.8",
+          referer: "https://www.myauto.ge/",
+        },
+      });
+
+      if (!response.ok()) {
+        throw new Error(`MyAuto API failed: ${response.status()}`);
+      }
+
+      const json: MyAutoSearchResponse = await response.json();
+
+      const items = json?.data?.items ?? [];
+
+      results.push(...items);
+
+      lastPage = json?.data.meta?.last_page ?? 1;
+
+      currentPage++;
+
+      if (results.length >= MAX_ITEMS)
+        break;
+
+      await page.waitForTimeout(500);
+
+    } while (currentPage <= lastPage);
+
+    return results.slice(0, MAX_ITEMS);
+
+  } finally {
+    await browser.close();
+  }
+}
+
+export async function getMyAutoPriceEvaluation(
+  params: MyAutoComparableSearch,
+  listingPrice: number
+) {
+  console.log(params)
+
+  const comparables = await scrapeMyAutoComparables(params);
+
+  const evaluation = evaluatePrice(listingPrice, comparables);
+
+  return evaluation;
 }
