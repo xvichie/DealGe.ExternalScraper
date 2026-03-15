@@ -133,8 +133,8 @@ export async function getBidMotorsAuctionDataByVinNumber(
     //   fullPage: true
     // });
 
-    const html = await page.content();
-    fs.writeFileSync("bidmotors-debug.html", html);
+    // const html = await page.content();
+    // fs.writeFileSync("bidmotors-debug.html", html);
 
     throw err;
 
