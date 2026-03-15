@@ -17,7 +17,7 @@ export async function scrapeMyAutoPreview(url: string): Promise<any> {
     // 1️⃣ Open listing page (Cloudflare handshake happens here)
     await page.goto(url, {
       waitUntil: "domcontentloaded",
-      timeout: 30_000,
+      timeout: 120_000,
     });
 
     // 2️⃣ Small deterministic delay (NOT networkidle)
