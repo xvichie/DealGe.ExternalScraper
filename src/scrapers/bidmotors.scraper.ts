@@ -128,10 +128,10 @@ export async function getBidMotorsAuctionDataByVinNumber(
 
   } catch (err) {
 
-    await page.screenshot({
-      path: "bidmotors-debug.png",
-      fullPage: true
-    });
+    // await page.screenshot({
+    //   path: "bidmotors-debug.png",
+    //   fullPage: true
+    // });
 
     const html = await page.content();
     fs.writeFileSync("bidmotors-debug.html", html);

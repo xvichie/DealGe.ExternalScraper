@@ -69,13 +69,13 @@ export async function scrapeCopartPreviewHtml(url: string) {
 
     if (!solrJson) {
       // Debug artifacts only when things go wrong
-      await page.screenshot({
-        path: "copart-debug.png",
-        fullPage: true,
-      });
+      // await page.screenshot({
+      //   path: "copart-debug.png",
+      //   fullPage: true,
+      // });
 
-      const html = await page.content();
-      fs.writeFileSync("copart-debug.html", html);
+      // const html = await page.content();
+      // fs.writeFileSync("copart-debug.html", html);
 
       throw new Error("cachedSolrLotDetailsStr not available");
     }
@@ -85,8 +85,8 @@ export async function scrapeCopartPreviewHtml(url: string) {
     try {
       lot = JSON.parse(solrJson);
     } catch {
-      fs.writeFileSync("copart-solr-raw.txt", solrJson);
-      throw new Error("Failed to parse cachedSolrLotDetailsStr JSON");
+      // fs.writeFileSync("copart-solr-raw.txt", solrJson);
+      // throw new Error("Failed to parse cachedSolrLotDetailsStr JSON");
     }
 
     // ---------------- MAP DATA ----------------
