@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "start": "tsx src/index.ts",
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --external:playwright-core --external:@sparticuz/chromium"
+    "start": "tsx src/server.ts",
+    "build": "esbuild src/server.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --external:playwright-core --external:@sparticuz/chromium"
   },
   "keywords": [],
   "author": "",
