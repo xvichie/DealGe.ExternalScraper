@@ -1,8 +1,8 @@
-import fs from "fs";
-import { createBrowser } from "../browsers/createBrowser";
+import { createBrowserContext } from "../browsers/createBrowserContext";
 
 export async function scrapeCopartPreviewHtml(url: string) {
-  const { browser, page } = await createBrowser();
+  const context = await createBrowserContext();
+  const page = await context.newPage();
 
   // ---------------- DEBUG HOOKS ----------------
   page.on("console", msg =>
@@ -143,6 +143,6 @@ export async function scrapeCopartPreviewHtml(url: string) {
     console.log("SCRAPED DATA:", JSON.stringify(data, null, 2));
     return data;
   } finally {
-    await browser.close();
+    await context.close();
   }
 }

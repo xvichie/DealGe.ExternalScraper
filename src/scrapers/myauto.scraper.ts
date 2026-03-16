@@ -1,4 +1,4 @@
-import { createBrowser } from "../browsers/createBrowser";
+import { createBrowserContext } from "../browsers/createBrowserContext";
 import { MyAutoComparableSearch, MyAutoSearchResponse } from "../types/myauto.types";
 import { buildMyAutoComparablesQuery, evaluatePrice, extractMyAutoProductId } from "../utils/myauto.utils";
 
@@ -11,7 +11,8 @@ export async function scrapeMyAutoPreview(url: string): Promise<any> {
 
   const apiUrl = `https://api2.myauto.ge/ka/products/${productId}`;
 
-  const { browser, page } = await createBrowser();
+  const context = await createBrowserContext();
+  const page = await context.newPage();
 
   try {
     // 1️⃣ Open listing page (Cloudflare handshake happens here)
@@ -45,7 +46,7 @@ export async function scrapeMyAutoPreview(url: string): Promise<any> {
     // ✅ Return RAW MyAuto product info only
     return json.data.info;
   } finally {
-    await browser.close();
+    await context.close();
   }
 }
 
@@ -55,7 +56,8 @@ export async function scrapeMyAutoComparables(
   params: MyAutoComparableSearch
 ): Promise<any[]> {
 
-  const { browser, page } = await createBrowser();
+  const context = await createBrowserContext();
+  const page = await context.newPage();
 
   try {
 
@@ -110,7 +112,7 @@ export async function scrapeMyAutoComparables(
     return results.slice(0, MAX_ITEMS);
 
   } finally {
-    await browser.close();
+    await context.close();
   }
 }
 

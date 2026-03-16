@@ -1,14 +1,15 @@
 import fs from "fs";
-import { createBrowser } from "../browsers/createBrowser";
 import { AuctionData } from "../types/auctionHistory.types";
 import * as cheerio from "cheerio";
+import { createBrowserContext } from "../browsers/createBrowserContext";
 
 export async function getBidMotorsAuctionDataByVinNumber(
   vin: string
 ): Promise<AuctionData | null> {
 
   const startUrl = "https://bidmotors.bg/en";
-  const { browser, page } = await createBrowser();
+  const context = await createBrowserContext();
+  const page = await context.newPage();
 
   try {
 
@@ -139,6 +140,6 @@ export async function getBidMotorsAuctionDataByVinNumber(
     throw err;
 
   } finally {
-    await browser.close();
+    await context.close();
   }
 }

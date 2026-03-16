@@ -60,20 +60,61 @@ const router = Router();
  *     summary: Scrape MyAuto listing by URL
  *     tags:
  *       - MyAuto
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - url
+ *             properties:
+ *               url:
+ *                 type: string
+ *                 example: https://www.myauto.ge/ka/pr/12345678
+ *     responses:
+ *       200:
+ *         description: Listing preview data
+ *       400:
+ *         description: Invalid request
+ *       500:
+ *         description: Internal server error
  */
 router.post("/preview", async (req, res) => {
-  const { url } = req.body as { url?: string };
-
-  if (!url) {
-    return res.status(400).json({ error: "url is required" });
-  }
-
   try {
+    const { url } = req.body as { url?: string };
+
+    if (!url) {
+      return res.status(400).json({
+        success: false,
+        error: "url is required",
+      });
+    }
+
+    // basic URL validation
+    try {
+      new URL(url);
+    } catch {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid URL",
+      });
+    }
+
     const data = await scrapeMyAutoPreview(url);
-    return res.json(data);
-  } catch (e: any) {
-    console.error(e);
-    return res.status(500).json({ error: e.message });
+
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+
+  } catch (error) {
+    console.error("MyAuto preview error:", error);
+
+    return res.status(500).json({
+      success: false,
+      error: "Failed to scrape MyAuto listing",
+    });
   }
 });
 
