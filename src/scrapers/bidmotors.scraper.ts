@@ -24,6 +24,21 @@ export async function getBidMotorsAuctionDataByVinNumber(
     // allow SPA scripts to render
     await page.waitForTimeout(2000);
 
+    // remove popup if it exists
+    await page.evaluate(() => {
+      document.querySelectorAll(".popup__dialog").forEach(el => el.remove());
+      document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+    });
+
+    // attempt clicking close button if still present
+    try {
+      const closeBtn = page.locator(".popup__btn-close");
+      if (await closeBtn.isVisible({ timeout: 2000 })) {
+        await closeBtn.click();
+        console.log("Popup closed");
+      }
+    } catch { }
+
     const inputSelector = "#vin-lot-search";
 
     await page.waitForSelector(inputSelector, {
@@ -33,12 +48,25 @@ export async function getBidMotorsAuctionDataByVinNumber(
 
     await page.fill(inputSelector, vin);
 
-    await page.keyboard.press("Enter");
+    await Promise.all([
+      page.waitForNavigation({ timeout: 60000, waitUntil: "domcontentloaded" }),
+      page.keyboard.press("Enter")
+    ]);
 
-    // wait until result page content loads
-    await page.waitForSelector(".car-details__item", {
-      timeout: 60000
+    await page.evaluate(() => {
+      document.querySelectorAll(".popup__dialog").forEach(el => el.remove());
+      document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
     });
+
+    await Promise.race([
+      page.waitForSelector(".car-details__item", { timeout: 60000 }),
+      page.waitForSelector(".search-empty", { timeout: 60000 })
+    ]);
+
+    if (await page.locator(".search-empty").count()) {
+      console.log("VIN not found on BidMotors");
+      return null;
+    }
 
     const html = await page.content();
     const $ = cheerio.load(html);
