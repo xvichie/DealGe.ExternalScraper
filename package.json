@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
-    "build": "esbuild src/server.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --external:playwright-core --external:@sparticuz/chromium"
+    "build": "esbuild src/server.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --external:playwright --external:playwright-core --external:@sparticuz/chromium"
   },
   "keywords": [],
   "author": "",
