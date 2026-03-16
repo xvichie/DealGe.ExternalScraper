@@ -141,8 +141,8 @@ export async function scrapeCopartPreviewHtml(url: string) {
     };
 
     console.log("SCRAPED DATA:", JSON.stringify(data, null, 2));
-    console.log(await page.content());
-    
+    //console.log(await page.content());
+
     return data;
   } finally {
     await context.close();

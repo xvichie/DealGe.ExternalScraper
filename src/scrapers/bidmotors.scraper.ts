@@ -1,4 +1,3 @@
-import fs from "fs";
 import { AuctionData } from "../types/auctionHistory.types";
 import * as cheerio from "cheerio";
 import { createBrowserContext } from "../browsers/createBrowserContext";
@@ -8,49 +7,44 @@ export async function getBidMotorsAuctionDataByVinNumber(
 ): Promise<AuctionData | null> {
 
   const startUrl = "https://bidmotors.bg/en";
+
   const context = await createBrowserContext();
   const page = await context.newPage();
 
   try {
 
+    console.log("VIN:", vin);
     console.log("Opening:", startUrl);
 
     await page.goto(startUrl, {
       waitUntil: "domcontentloaded",
-      timeout: 30000
+      timeout: 60000
     });
+
+    // allow SPA scripts to render
+    await page.waitForTimeout(2000);
 
     const inputSelector = "#vin-lot-search";
 
-    await page.waitForSelector(inputSelector, { timeout: 15000 });
+    await page.waitForSelector(inputSelector, {
+      state: "visible",
+      timeout: 60000
+    });
 
-    await page.type(inputSelector, vin);
+    await page.fill(inputSelector, vin);
 
     await page.keyboard.press("Enter");
 
-    await Promise.race([
-      page.waitForFunction(
-        (vin) => window.location.href.toLowerCase().includes(vin.toLowerCase()),
-        vin,
-        { timeout: 30000 }
-      ),
-      page.waitForSelector(".car-details__item", { timeout: 60000 })
-    ]);
-
-    const currentUrl = page.url();
-
-    if (!currentUrl.toLowerCase().includes(vin.toLowerCase())) {
-      console.log("VIN not found on BidMotors");
-      return null;
-    }
-
-    console.log("Redirected to:", currentUrl);
+    // wait until result page content loads
+    await page.waitForSelector(".car-details__item", {
+      timeout: 60000
+    });
 
     const html = await page.content();
     const $ = cheerio.load(html);
 
     /**
-     * Helper to read values from car details table
+     * Helper to extract values from details table
      */
     const getValue = (label: string): string | null => {
 
@@ -94,7 +88,10 @@ export async function getBidMotorsAuctionDataByVinNumber(
      */
     let price: number | null = null;
 
-    const priceText = $(".auction-status__price").first().text().trim();
+    const priceText = $(".auction-status__price")
+      .first()
+      .text()
+      .trim();
 
     if (priceText) {
       const numeric = priceText.replace(/[^\d.]/g, "");
@@ -104,13 +101,17 @@ export async function getBidMotorsAuctionDataByVinNumber(
     /**
      * Extract damages
      */
-    const primaryDamage = getValue("Primary damage") || getValue("Damage");
-    const secondaryDamage = getValue("Secondary damage");
+    const primaryDamage =
+      getValue("Primary damage") || getValue("Damage");
+
+    const secondaryDamage =
+      getValue("Secondary damage");
 
     /**
-     * Extract title type
+     * Extract title
      */
-    const title = getValue("Title") || getValue("Doc type");
+    const title =
+      getValue("Title") || getValue("Doc type");
 
     const data: AuctionData = {
       DocType: title,
@@ -130,13 +131,19 @@ export async function getBidMotorsAuctionDataByVinNumber(
     };
 
     console.log("SCRAPED BIDMOTORS:", data);
-    // console.log(await page.content());
 
     return data;
 
-  } catch (err) {
-    throw err;
+  } catch (error) {
+
+    console.error("BidMotors scraper error:", error);
+
+    return null;
+
   } finally {
+
     await context.close();
+
   }
+
 }
