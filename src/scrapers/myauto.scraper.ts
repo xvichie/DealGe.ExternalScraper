@@ -44,6 +44,7 @@ export async function scrapeMyAutoPreview(url: string): Promise<any> {
     }
 
     // ✅ Return RAW MyAuto product info only
+    console.log(json.data.info)
     return json.data.info;
   } finally {
     await context.close();

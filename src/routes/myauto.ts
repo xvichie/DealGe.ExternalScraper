@@ -103,11 +103,7 @@ router.post("/preview", async (req, res) => {
 
     const data = await scrapeMyAutoPreview(url);
 
-    return res.status(200).json({
-      success: true,
-      data,
-    });
-
+    return res.status(200).json(data);
   } catch (error) {
     console.error("MyAuto preview error:", error);
 
