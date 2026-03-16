@@ -26,9 +26,15 @@ export async function getBidMotorsAuctionDataByVinNumber(
 
     await page.type(inputSelector, vin);
 
-    await Promise.all([
-      page.keyboard.press("Enter"),
-      page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 30000 })
+    await page.keyboard.press("Enter");
+
+    await Promise.race([
+      page.waitForFunction(
+        (vin) => window.location.href.toLowerCase().includes(vin.toLowerCase()),
+        vin,
+        { timeout: 30000 }
+      ),
+      page.waitForSelector(".car-details__item", { timeout: 60000 })
     ]);
 
     const currentUrl = page.url();
@@ -124,21 +130,12 @@ export async function getBidMotorsAuctionDataByVinNumber(
     };
 
     console.log("SCRAPED BIDMOTORS:", data);
+    // console.log(await page.content());
 
     return data;
 
   } catch (err) {
-
-    // await page.screenshot({
-    //   path: "bidmotors-debug.png",
-    //   fullPage: true
-    // });
-
-    // const html = await page.content();
-    // fs.writeFileSync("bidmotors-debug.html", html);
-
     throw err;
-
   } finally {
     await context.close();
   }

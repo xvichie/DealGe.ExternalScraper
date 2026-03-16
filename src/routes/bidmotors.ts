@@ -60,7 +60,7 @@ const router = Router();
  *       500:
  *         description: Scraping failed
  */
-router.post("/vin", async (req, res) => {
+  router.post("/vin", async (req, res) => {
 
   const { vin } = req.body as { vin?: string };
 

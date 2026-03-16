@@ -47,7 +47,6 @@ export async function searchUrls(page: Page, query: string) {
 
         const html = await page.content()
         console.log("HTML length:", html.length)
-        console.log(html.slice(0, 2000))
         
         const $ = cheerio.load(html)
 

@@ -81,15 +81,6 @@ export async function getAuctionDataByVinNumber(
     return data;
 
   } catch (err) {
-
-    // await page.screenshot({
-    //   path: "carsbidshistory-debug.png",
-    //   fullPage: true
-    // });
-
-    // const html = await page.content();
-    // fs.writeFileSync("carsbidshistory-debug.html", html);
-
     throw err;
   } finally {
     await context.close();

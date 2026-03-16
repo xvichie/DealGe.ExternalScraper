@@ -109,6 +109,7 @@ export async function scrapeMyAutoComparables(
 
     } while (currentPage <= lastPage);
 
+    //console.log(await page.content());
     return results.slice(0, MAX_ITEMS);
 
   } finally {
