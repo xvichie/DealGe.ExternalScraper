@@ -1,6 +1,6 @@
-import { createBrowserContext } from "../browsers/createBrowserContext";
-import { MyAutoComparableSearch, MyAutoSearchResponse } from "../types/myauto.types";
-import { buildMyAutoComparablesQuery, evaluatePrice, extractMyAutoProductId } from "../utils/myauto.utils";
+import { createBrowserContext } from "../../browsers/createBrowserContext";
+import { MyAutoComparableSearch, MyAutoSearchResponse } from "../../types/myauto.types";
+import { buildMyAutoComparablesQuery, evaluatePrice, extractMyAutoProductId } from "../../utils/myauto.utils";
 
 export async function scrapeMyAutoPreview(url: string): Promise<any> {
   const productId = extractMyAutoProductId(url);
@@ -78,6 +78,8 @@ export async function scrapeMyAutoComparables(
 
       const query = buildMyAutoComparablesQuery(params, currentPage);
 
+      console.log(query)
+
       const apiUrl =
         `https://api2.myauto.ge/ka/products?${query}`;
 
@@ -129,4 +131,68 @@ export async function getMyAutoPriceEvaluation(
   const evaluation = evaluatePrice(listingPrice, comparables);
 
   return evaluation;
+}
+
+export async function getAllMyAutoListings(
+  params: MyAutoComparableSearch
+): Promise<any[]> {
+
+  const context = await createBrowserContext();
+  const page = await context.newPage();
+
+  try {
+
+    // Cloudflare handshake
+    console.log("shemovida")
+    await page.goto("https://www.myauto.ge", {
+      waitUntil: "domcontentloaded",
+      timeout: 30000,
+    });
+
+    await page.waitForTimeout(1200);
+
+    let currentPage = 1;
+    let lastPage = 1;
+
+    const results: any[] = [];
+
+    do {
+
+      const query = buildMyAutoComparablesQuery(params, currentPage);
+
+      const apiUrl = `https://api2.myauto.ge/ka/products?${query}`;
+
+      console.log(apiUrl)
+
+      const response = await page.request.get(apiUrl, {
+        headers: {
+          accept: "application/json, text/plain, */*",
+          "accept-language": "ka,en-US;q=0.9,en;q=0.8",
+          referer: "https://www.myauto.ge/",
+        },
+      });
+
+      if (!response.ok()) {
+        throw new Error(`MyAuto API failed: ${response.status()}`);
+      }
+
+      const json: MyAutoSearchResponse = await response.json();
+
+      const items = json?.data?.items ?? [];
+
+      results.push(...items);
+
+      lastPage = json?.data?.meta?.last_page ?? 1;
+
+      currentPage++;
+
+      await page.waitForTimeout(400);
+
+    } while (currentPage <= lastPage);
+
+    return results;
+
+  } finally {
+    await context.close();
+  }
 }

@@ -1,4 +1,4 @@
-import { createBrowserContext } from "../browsers/createBrowserContext";
+import { createBrowserContext } from "../../browsers/createBrowserContext";
 
 export async function scrapeCopartPreviewHtml(url: string) {
   const context = await createBrowserContext();

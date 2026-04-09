@@ -18,7 +18,7 @@ export function buildMyAutoComparablesQuery(params: MyAutoComparableSearch, page
   if (params.myAutoVehicleTypeId)
     search.set("TypeID", params.myAutoVehicleTypeId?.toString());
 
-  if(params.myAutoForRent)
+  if (params.myAutoForRent)
     search.set("ForRent", params.myAutoForRent?.toString());
 
   // Mans = makeId.modelId
@@ -48,9 +48,9 @@ export function buildMyAutoComparablesQuery(params: MyAutoComparableSearch, page
   if (params.customs !== undefined && params.customs == 1)
     search.set("Customs", params.customs.toString());
 
-  if(params.isInGeorgia)
-    search.set("Locs", "2.3.4.7.15.30.113.53.39.38.37.36.40.41.44.31.5.47.48.52.8.54.16.6.14.13.12.11.10.9.55.56.57.59.58.61.62.63.64.66.71.72.74.75.76.77.78.80.81.82.83.84.85.86.87.88.91.96.97.101.109.116.119.122.127.131.133.137.139.143")
-  else ;
+  // if (params.isInGeorgia)
+  //   search.set("Locs", "2.3.4.7.15.30.113.53.39.38.37.36.40.41.44.31.5.47.48.52.8.54.16.6.14.13.12.11.10.9.55.56.57.59.58.61.62.63.64.66.71.72.74.75.76.77.78.80.81.82.83.84.85.86.87.88.91.96.97.101.109.116.119.122.127.131.133.137.139.143")
+  // else;
 
   search.set("MileageType", mileageType.toString());
   search.set("CurrencyID", currencyId.toString());
@@ -107,30 +107,29 @@ export function evaluatePrice(
 ): PriceEvaluation {
 
   const prices = comparables
-    .map(x => x.price_usd)
+    .map(c => c.price_usd)
     .filter(p => p > 0)
     .sort((a, b) => a - b);
 
-  if (prices.length < 5) {
-    throw new Error("Not enough comparables");
+  let filtered = prices;
+
+  if (prices.length >= 10) {
+
+    let trimPercent = 0.10;
+
+    if (prices.length >= 30)
+      trimPercent = 0.15;
+
+    const trimCount = Math.floor(prices.length * trimPercent);
+
+    filtered = prices.slice(
+      trimCount,
+      prices.length - trimCount
+    );
   }
 
-  // Quartiles
-  const p25 = percentile(prices, 0.25);
-  const p75 = percentile(prices, 0.75);
-
-  const iqr = p75 - p25;
-
-  const lowerBound = p25 - 1.5 * iqr;
-  const upperBound = p75 + 1.5 * iqr;
-
-  // Remove outliers
-  const filtered = prices.filter(
-    p => p >= lowerBound && p <= upperBound
-  );
-
   if (filtered.length < 3) {
-    throw new Error("Too many outliers removed");
+    throw new Error("Not enough comparable prices");
   }
 
   const medianPrice = median(filtered);

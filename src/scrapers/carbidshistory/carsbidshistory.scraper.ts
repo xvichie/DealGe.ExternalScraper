@@ -1,6 +1,6 @@
-import { AuctionData } from "../types/auctionHistory.types";
 import * as cheerio from "cheerio";
-import { createBrowserContext } from "../browsers/createBrowserContext";
+import { createBrowserContext } from "../../browsers/createBrowserContext";
+import { AuctionData } from "../../types/auctionHistory.types";
 
 export async function getAuctionDataByVinNumber(
   vin: string

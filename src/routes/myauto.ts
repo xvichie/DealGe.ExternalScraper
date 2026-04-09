@@ -1,10 +1,6 @@
 import { Router } from "express";
-import {
-  getMyAutoPriceEvaluation,
-  scrapeMyAutoComparables,
-  scrapeMyAutoPreview,
-} from "../scrapers/myauto.scraper";
 import { MyAutoComparableSearch } from "../types/myauto.types";
+import { scrapeMyAutoPreview, scrapeMyAutoComparables, getMyAutoPriceEvaluation, getAllMyAutoListings } from "../scrapers/myauto/myauto.scraper";
 
 const router = Router();
 
@@ -180,7 +176,7 @@ router.post("/comparables", async (req, res) => {
 router.post("/price-evaluation", async (req, res) => {
   const { params, listingPrice } = req.body;
 
-  if (!params || !listingPrice) {
+  if (!params) {
     return res.status(400).json({
       error: "params and listingPrice are required",
     });
@@ -191,6 +187,48 @@ router.post("/price-evaluation", async (req, res) => {
     return res.json(result);
   } catch (e: any) {
     console.error(e);
+    return res.status(500).json({
+      error: e.message,
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /myauto/listings:
+ *   post:
+ *     summary: Fetch ALL listings from MyAuto based on filters
+ *     tags:
+ *       - MyAuto
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/MyAutoComparableSearch'
+ *     responses:
+ *       200:
+ *         description: All listings returned from MyAuto
+ */
+router.post("/listings", async (req, res) => {
+  const body = req.body as MyAutoComparableSearch;
+
+  console.log(body)
+
+  if (!body?.myAutoMakeId || !body?.myAutoModelId) {
+    return res.status(400).json({
+      error: "myAutoMakeId and myAutoModelId are required",
+    });
+  }
+
+  try {
+    const listings = await getAllMyAutoListings(body);
+
+    return res.json(listings);
+
+  } catch (e: any) {
+    console.error(e);
+
     return res.status(500).json({
       error: e.message,
     });

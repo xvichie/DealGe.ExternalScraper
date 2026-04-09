@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { scrapeCopartPreviewHtml } from "../scrapers/copart.scraper";
+import { scrapeCopartPreviewHtml } from "../scrapers/copart/copart.scraper";
 
 const router = Router();
 

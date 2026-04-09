@@ -33,8 +33,7 @@ export interface MyAutoComparableSearch {
     mileageType?: number;
     currencyId?: number;
 
-    location: boolean;
-    isInGeorgia: boolean;
+    location?: boolean;
 }
 
 export interface PriceEvaluation {

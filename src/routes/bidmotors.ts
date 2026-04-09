@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getBidMotorsAuctionDataByVinNumber } from "../scrapers/bidmotors.scraper";
+import { getBidMotorsAuctionDataByVinNumber } from "../scrapers/bidmotors/bidmotors.scraper";
 
 const router = Router();
 
